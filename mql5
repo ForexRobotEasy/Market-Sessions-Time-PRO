@@ -1,0 +1,118 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                 Market Sessions Time PRO.mq5     |
+//|                        Developed by Forex Robot Easy Team         |
+//|                               http://www.forexroboteasy.com       |
+//+------------------------------------------------------------------+
+
+// Define constants for market sessions
+#define SESSION_LONDON      1
+#define SESSION_NEW_YORK    2
+#define SESSION_SYDNEY      3
+#define SESSION_TOKYO       4
+
+// Define global variables
+datetime marketOpenTime = 0;
+datetime marketCloseTime = 0;
+int currentSession = 0;
+
+//+------------------------------------------------------------------+
+//|                        Initialization function                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Set the correct timezone for the chart
+    int timezone = TimeZone;
+    if (IsDST())
+        timezone += 1;
+
+    // Set the market open and close times for each session
+    marketOpenTime = TimeGMT() + timezone * 3600;
+    marketCloseTime = TimeGMT() + timezone * 3600;
+
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//|                        Deinitialization function                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+    // Clear global variables
+    marketOpenTime = 0;
+    marketCloseTime = 0;
+    currentSession = 0;
+}
+
+//+------------------------------------------------------------------+
+//|                     Custom chart representation                   |
+//+------------------------------------------------------------------+
+void CustomizeChart()
+{
+    // Add custom indicators or objects to the chart
+    // For example, you can add vertical lines to represent market open and close times
+    ObjectCreate('MarketOpenLine', OBJ_VLINE, 0, marketOpenTime, 0);
+    ObjectSet('MarketOpenLine', OBJPROP_COLOR, clrGreen);
+
+    ObjectCreate('MarketCloseLine', OBJ_VLINE, 0, marketCloseTime, 0);
+    ObjectSet('MarketCloseLine', OBJPROP_COLOR, clrRed);
+}
+
+//+------------------------------------------------------------------+
+//|                 Real-time updates of market sessions              |
+//+------------------------------------------------------------------+
+void UpdateMarketSessions()
+{
+    // Determine the current market session based on the current time
+    int hour = TimeHour(TimeGMT());
+    if (hour >= 8 && hour < 16)
+        currentSession = SESSION_LONDON;
+    else if (hour >= 16 && hour < 24)
+        currentSession = SESSION_NEW_YORK;
+    else if (hour >= 0 && hour < 8)
+        currentSession = SESSION_SYDNEY;
+
+    // Display the current market session on the chart
+    Comment('Current Market Session: ', currentSession);
+}
+
+//+------------------------------------------------------------------+
+//|                   Clear and understandable market status view     |
+//+------------------------------------------------------------------+
+void DisplayMarketStatus()
+{
+    // Display the market status based on the current session
+    string marketStatus;
+    switch (currentSession)
+    {
+        case SESSION_LONDON:
+            marketStatus = 'London Market Session';
+            break;
+        case SESSION_NEW_YORK:
+            marketStatus = 'New York Market Session';
+            break;
+        case SESSION_SYDNEY:
+            marketStatus = 'Sydney Market Session';
+            break;
+        default:
+            marketStatus = 'No Active Market Session';
+            break;
+    }
+
+    // Display the market status on the chart
+    Comment('Market Status: ', marketStatus);
+}
+
+//+------------------------------------------------------------------+
+//|                   The main trading function                       |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+    // Update market sessions and display market status
+    UpdateMarketSessions();
+    DisplayMarketStatus();
+
+    // Add your trading logic here
+    // ...
+}
+
